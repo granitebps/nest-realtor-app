@@ -7,7 +7,8 @@ import {
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
-import { User, UserType } from '@prisma/client';
+import { UserType } from '@prisma/client';
+import { JwtService } from '@nestjs/jwt';
 
 interface SignupParams {
   name: string;
@@ -23,7 +24,10 @@ interface SigninParams {
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly jwtService: JwtService,
+  ) {}
 
   async signup(
     { email, password, name, phone }: SignupParams,
@@ -77,16 +81,20 @@ export class AuthService {
   }
 
   private generateJWT(name: string, id: number): string {
-    const token = jwt.sign(
-      {
-        name,
-        id,
-      },
-      process.env.JWT_KEY,
-      {
-        expiresIn: 3600,
-      },
-    );
+    const token = this.jwtService.sign({
+      name,
+      id,
+    });
+    // const token = jwt.sign(
+    //   {
+    //     name,
+    //     id,
+    //   },
+    //   process.env.JWT_KEY,
+    //   {
+    //     expiresIn: 3600,
+    //   },
+    // );
     return token;
   }
 }
